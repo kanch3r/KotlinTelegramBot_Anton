@@ -8,9 +8,9 @@ data class Word(
     var correctAnswersCount: Int = 0,
 )
 
-fun main() {
+fun loadDictionary(fileName: String): MutableList<Word> {
     val dictionary: MutableList<Word> = mutableListOf()
-    val wordsFile: File = File("words.txt")
+    val wordsFile: File = File(fileName)
     wordsFile.forEachLine {
         val line: List<String> = it.split("|")
         val word = Word(
@@ -20,5 +20,27 @@ fun main() {
         )
         dictionary.add(word)
     }
-    dictionary.forEach { println(it) }
+    return dictionary
+}
+
+fun main() {
+    val dictionary: MutableList<Word> = loadDictionary("words.txt")
+
+    while (true) {
+        println(
+            "Меню: \n" +
+                    "1 – Учить слова\n" +
+                    "2 – Статистика\n" +
+                    "0 – Выход"
+        )
+        val userInput = readln().toIntOrNull()
+
+        when (userInput) {
+            1 -> println("Вы выбрали учить слова.")
+            2 -> println("Вы выбрали просмотр статистики.")
+            0 -> return
+            null -> println("Введите число 1, 2 или 0")
+            else -> println("Введите число 1, 2 или 0")
+        }
+    }
 }
