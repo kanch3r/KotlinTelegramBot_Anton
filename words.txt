@@ -1,5 +1,7 @@
-hello|привет|0
-dog|собака|0
-cat|кошка|0
-thank you|спасибо|0
-поздравление|congratulation|
+hello|привет|3
+dog|собака|3
+cat|кошка|1
+thank you|спасибо|2
+congratulation|поздравление|
+race|гонка|3
+animal|животное|
