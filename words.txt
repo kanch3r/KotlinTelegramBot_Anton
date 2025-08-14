@@ -5,3 +5,4 @@ thank you|спасибо|2
 congratulation|поздравление|
 race|гонка|3
 animal|животное|
+flower|цветок|
