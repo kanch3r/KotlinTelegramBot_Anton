@@ -8,7 +8,7 @@ data class Word(
     var correctAnswersCount: Int = 0,
 )
 
-fun loadDictionary(fileName: String): MutableList<Word> {
+fun loadDictionary(fileName: String): List<Word> {
     val dictionary: MutableList<Word> = mutableListOf()
     val wordsFile: File = File(fileName)
     wordsFile.forEachLine {
@@ -24,7 +24,7 @@ fun loadDictionary(fileName: String): MutableList<Word> {
 }
 
 fun main() {
-    val dictionary: MutableList<Word> = loadDictionary("words.txt")
+    val dictionary: List<Word> = loadDictionary("words.txt")
 
     while (true) {
         println(
@@ -39,7 +39,6 @@ fun main() {
             1 -> println("Вы выбрали учить слова.")
             2 -> println("Вы выбрали просмотр статистики.")
             0 -> return
-            null -> println("Введите число 1, 2 или 0")
             else -> println("Введите число 1, 2 или 0")
         }
     }
