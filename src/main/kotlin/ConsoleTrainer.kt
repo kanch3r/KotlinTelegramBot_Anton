@@ -26,18 +26,69 @@ fun loadDictionary(fileName: String): List<Word> {
     return dictionary
 }
 
+fun learningWord(workingFile: List<Word>) {
+    while (true) {
+
+        val notLearnedList = workingFile.filter { it.correctAnswersCount < NUMBER_OF_SUCCESS_TRIES }
+        if (notLearnedList.count() == 0) {
+            println("Все слова в словаре выучены!")
+            return
+        }
+
+        val questionWords = notLearnedList.shuffled().take(4)
+        val correctAnswer = questionWords.random()
+
+        println("${correctAnswer.origin}:")
+        questionWords.forEach { word ->
+            println("\t${questionWords.indexOf(word) + 1} - ${word.translate}")
+        }
+        println("__________")
+        println("0 - Меню")
+
+        val userAnswerInput = readln().toIntOrNull()
+        if (userAnswerInput == null) {
+            println("Неверный ввод\n")
+            continue
+        }
+
+        val userAnswerId: Int = when (userAnswerInput) {
+            in 1..4 -> userAnswerInput
+            0 -> return
+            else -> {
+                println("Неверный ввод\n")
+                continue
+            }
+        }
+
+        if (correctAnswer.translate == questionWords[userAnswerId - 1].translate) {
+            correctAnswer.correctAnswersCount++
+            println("Правильно!\n")
+            saveDictionary("words.txt", workingFile)
+        } else {
+            println("Неправильно! ${correctAnswer.origin} - это ${correctAnswer.translate}\n")
+        }
+    }
+}
+
+fun saveDictionary(fileName: String, workingFile: List<Word>) {
+    File(fileName).writeText(workingFile.joinToString("\n") {
+        "${it.origin}|${it.translate}|${it.correctAnswersCount}"
+    })
+}
+
 fun displayStatistics(workingFile: List<Word>): String {
     val totalCount: Int = workingFile.count()
-    val learnedCount: Int = workingFile.filter { it.correctAnswersCount >= NUMBER_OF_SUCCESS_TRIES }.count()
+    val learnedCount: Int = workingFile.count { it.correctAnswersCount >= NUMBER_OF_SUCCESS_TRIES }
     val percent: Double = learnedCount * ONE_HUNDRED_PERCENT / totalCount
     return "Выучено $learnedCount из $totalCount слов | ${"%.0f".format(percent)}%"
 }
 
 fun main() {
-    val dictionary: List<Word> = loadDictionary("words.txt")
-    val statistics: String = displayStatistics(dictionary)
 
     while (true) {
+
+        val dictionary: List<Word> = loadDictionary("words.txt")
+        val statistics: String = displayStatistics(dictionary)
         println(
             "Меню: \n" +
                     "1 – Учить слова\n" +
@@ -47,7 +98,7 @@ fun main() {
         val userInput: Int? = readln().toIntOrNull()
 
         when (userInput) {
-            1 -> println("Вы выбрали учить слова.")
+            1 -> learningWord(dictionary)
             2 -> println("$statistics\n")
             0 -> return
             else -> println("Введите число 1, 2 или 0")
