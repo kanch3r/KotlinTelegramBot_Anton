@@ -1,11 +1,11 @@
-hello|привет|1
-dog|собака|1
-cat|кошка|1
-thank you|спасибо|3
-congratulation|поздравление|3
-race|гонка|1
-animal|животное|1
-flower|цветок|3
-belt|ремень|1
-train|поезд|2
+hello|привет|0
+dog|собака|0
+cat|кошка|0
+thank you|спасибо|0
+congratulation|поздравление|0
+race|гонка|0
+animal|животное|0
+flower|цветок|0
+belt|ремень|0
+train|поезд|0
 tree|дерево|0

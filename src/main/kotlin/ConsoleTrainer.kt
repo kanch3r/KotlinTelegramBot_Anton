@@ -4,6 +4,7 @@ import java.io.File
 
 const val NUMBER_OF_SUCCESS_TRIES: Int = 3
 const val ONE_HUNDRED_PERCENT: Double = 100.0
+const val QUANTITY_OF_ANSWERS: Int = 4
 
 data class Word(
     val origin: String,
@@ -31,11 +32,16 @@ fun learningWord(workingFile: List<Word>) {
 
         val notLearnedList = workingFile.filter { it.correctAnswersCount < NUMBER_OF_SUCCESS_TRIES }
         if (notLearnedList.count() == 0) {
-            println("Все слова в словаре выучены!")
+            println("Все слова в словаре выучены!\n")
             return
         }
 
-        val questionWords = notLearnedList.shuffled().take(4)
+        val questionWords = notLearnedList.shuffled().take(QUANTITY_OF_ANSWERS).toMutableList()
+        if (questionWords.size < QUANTITY_OF_ANSWERS) {
+            repeat(QUANTITY_OF_ANSWERS - questionWords.size) {
+                questionWords.add(workingFile.random())
+            }
+        }
         val correctAnswer = questionWords.random()
 
         println("${correctAnswer.origin}:")
@@ -52,7 +58,7 @@ fun learningWord(workingFile: List<Word>) {
         }
 
         val userAnswerId: Int = when (userAnswerInput) {
-            in 1..4 -> userAnswerInput
+            in 1..QUANTITY_OF_ANSWERS -> userAnswerInput
             0 -> return
             else -> {
                 println("Неверный ввод\n")
@@ -84,11 +90,10 @@ fun displayStatistics(workingFile: List<Word>): String {
 }
 
 fun main() {
+    val dictionary: List<Word> = loadDictionary("words.txt")
 
     while (true) {
 
-        val dictionary: List<Word> = loadDictionary("words.txt")
-        val statistics: String = displayStatistics(dictionary)
         println(
             "Меню: \n" +
                     "1 – Учить слова\n" +
@@ -99,7 +104,7 @@ fun main() {
 
         when (userInput) {
             1 -> learningWord(dictionary)
-            2 -> println("$statistics\n")
+            2 -> println("${displayStatistics(dictionary)}\n")
             0 -> return
             else -> println("Введите число 1, 2 или 0")
         }
