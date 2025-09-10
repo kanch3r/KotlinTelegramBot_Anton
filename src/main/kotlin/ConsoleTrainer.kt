@@ -5,6 +5,7 @@ import java.io.File
 const val NUMBER_OF_SUCCESS_TRIES: Int = 3
 const val ONE_HUNDRED_PERCENT: Double = 100.0
 const val QUANTITY_OF_ANSWERS: Int = 4
+const val NAME_OF_DICTIONARY: String = "words.txt"
 
 data class Word(
     val origin: String,
@@ -12,101 +13,125 @@ data class Word(
     var correctAnswersCount: Int = 0,
 )
 
-fun loadDictionary(fileName: String): List<Word> {
-    val dictionary: MutableList<Word> = mutableListOf()
-    val wordsFile: File = File(fileName)
-    wordsFile.forEachLine {
-        val line: List<String> = it.split("|")
-        val word = Word(
-            origin = line[0],
-            translate = line[1],
-            correctAnswersCount = line[2].toIntOrNull() ?: 0
-        )
-        dictionary.add(word)
-    }
-    return dictionary
+data class Statistics(
+    val total: Int,
+    val learned: Int,
+    val percent: Double,
+) {
+    override fun toString() =
+        "Выучено $learned из $total слов | ${"%.0f".format(percent)}%"
 }
 
-fun learningWord(workingFile: List<Word>) {
-    while (true) {
+data class Question(
+    val variants: List<Word>,
+    val correctAnswer: Word,
+)
 
-        val notLearnedList = workingFile.filter { it.correctAnswersCount < NUMBER_OF_SUCCESS_TRIES }
-        if (notLearnedList.count() == 0) {
-            println("Все слова в словаре выучены!\n")
-            return
+fun Question.asConsoleString(): String {
+    return "${correctAnswer.origin}:\n" +
+            variants.mapIndexed { index, word ->
+                "${index + 1} - ${word.translate}"
+            }.joinToString("\n") +
+            "\n__________\n" +
+            "0 - Меню"
+}
+
+class ConsoleTrainer() {
+    private var questionWord: Question? = null
+    private val dictionary: List<Word> = loadDictionary()
+
+    fun learningWord() {
+        while (true) {
+            questionWord = getNextQuestion()
+            if (questionWord == null) {
+                println("Все слова в словаре выучены!\n")
+                return
+            } else {
+                println(questionWord?.asConsoleString())
+                val userAnswerInput = readln().toIntOrNull()
+                if (userAnswerInput == 0) return
+                if (checkAnswer(userAnswerInput?.minus(1))) {
+                    println("Правильно!\n")
+                } else {
+                    println(
+                        "Неправильно! ${questionWord?.correctAnswer?.origin} " +
+                                "- это ${questionWord?.correctAnswer?.translate}\n"
+                    )
+                }
+            }
         }
+    }
 
+    fun getStatistics(): Statistics {
+        val totalCount: Int = dictionary.size
+        val learnedCount: Int = dictionary.count { it.correctAnswersCount >= NUMBER_OF_SUCCESS_TRIES }
+        val percent: Double = learnedCount * ONE_HUNDRED_PERCENT / totalCount
+        return Statistics(totalCount, learnedCount, percent)
+    }
+
+    fun getNextQuestion(): Question? {
+        val notLearnedList = dictionary.filter { it.correctAnswersCount < NUMBER_OF_SUCCESS_TRIES }
+        if (notLearnedList.isEmpty()) return null
         val questionWords = notLearnedList.shuffled().take(QUANTITY_OF_ANSWERS).toMutableList()
         if (questionWords.size < QUANTITY_OF_ANSWERS) {
-            repeat(QUANTITY_OF_ANSWERS - questionWords.size) {
-                questionWords.add(workingFile.random())
-            }
+            questionWords.addAll(
+                dictionary
+                    .filter { it !in questionWords }
+                    .shuffled().take(QUANTITY_OF_ANSWERS - questionWords.size))
         }
         val correctAnswer = questionWords.random()
+        return Question(
+            variants = questionWords,
+            correctAnswer = correctAnswer
+        )
+    }
 
-        println("${correctAnswer.origin}:")
-        questionWords.forEach { word ->
-            println("\t${questionWords.indexOf(word) + 1} - ${word.translate}")
+    fun checkAnswer(userAnswerIndex: Int?): Boolean {
+        val correctAnswerId = questionWord?.variants?.indexOf(questionWord?.correctAnswer)
+        if (userAnswerIndex == null) return false
+        val userAnswerId: Int = when (userAnswerIndex) {
+            in 0 until QUANTITY_OF_ANSWERS -> userAnswerIndex
+            else -> return false
         }
-        println("__________")
-        println("0 - Меню")
-
-        val userAnswerInput = readln().toIntOrNull()
-        if (userAnswerInput == null) {
-            println("Неверный ввод\n")
-            continue
+        if (correctAnswerId == userAnswerId) {
+            questionWord?.correctAnswer?.correctAnswersCount++
+            saveDictionary()
+            return true
+        } else {
+            return false
         }
+    }
 
-        val userAnswerId: Int = when (userAnswerInput) {
-            in 1..QUANTITY_OF_ANSWERS -> userAnswerInput
-            0 -> return
-            else -> {
-                println("Неверный ввод\n")
-                continue
+    private fun loadDictionary(): List<Word> {
+        val dictionary: MutableList<Word> = mutableListOf()
+        val wordsFile = File(NAME_OF_DICTIONARY)
+        wordsFile.forEachLine {
+            val line: List<String> = it.split("|")
+            val word = Word(
+                origin = line[0],
+                translate = line[1],
+                correctAnswersCount = line[2].toIntOrNull() ?: 0
+            )
+            dictionary.add(word)
+        }
+        return dictionary
+    }
+
+    private fun saveDictionary() {
+        File(NAME_OF_DICTIONARY).apply {
+            this.writeText("")
+            dictionary.forEach {
+                appendText("${it.origin}|${it.translate}|${it.correctAnswersCount}\n")
             }
         }
-
-        if (correctAnswer.translate == questionWords[userAnswerId - 1].translate) {
-            correctAnswer.correctAnswersCount++
-            println("Правильно!\n")
-            saveDictionary("words.txt", workingFile)
-        } else {
-            println("Неправильно! ${correctAnswer.origin} - это ${correctAnswer.translate}\n")
-        }
     }
 }
 
-fun saveDictionary(fileName: String, workingFile: List<Word>) {
-    File(fileName).writeText(workingFile.joinToString("\n") {
-        "${it.origin}|${it.translate}|${it.correctAnswersCount}"
-    })
-}
-
-fun displayStatistics(workingFile: List<Word>): String {
-    val totalCount: Int = workingFile.count()
-    val learnedCount: Int = workingFile.count { it.correctAnswersCount >= NUMBER_OF_SUCCESS_TRIES }
-    val percent: Double = learnedCount * ONE_HUNDRED_PERCENT / totalCount
-    return "Выучено $learnedCount из $totalCount слов | ${"%.0f".format(percent)}%"
-}
-
-fun main() {
-    val dictionary: List<Word> = loadDictionary("words.txt")
-
-    while (true) {
-
-        println(
-            "Меню: \n" +
-                    "1 – Учить слова\n" +
-                    "2 – Статистика\n" +
-                    "0 – Выход"
-        )
-        val userInput: Int? = readln().toIntOrNull()
-
-        when (userInput) {
-            1 -> learningWord(dictionary)
-            2 -> println("${displayStatistics(dictionary)}\n")
-            0 -> return
-            else -> println("Введите число 1, 2 или 0")
-        }
-    }
+fun drawMainMenu() {
+    println(
+        "Меню: \n" +
+                "1 – Учить слова\n" +
+                "2 – Статистика\n" +
+                "0 – Выход"
+    )
 }
