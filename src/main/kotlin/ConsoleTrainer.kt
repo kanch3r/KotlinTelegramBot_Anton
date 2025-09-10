@@ -25,14 +25,15 @@ data class Statistics(
 data class Question(
     val variants: List<Word>,
     val correctAnswer: Word,
-) {
-    override fun toString() =
-        "${correctAnswer.origin}:\n" +
-                variants.mapIndexed { index, word ->
-                    "${index + 1} - ${word.translate}"
-                }.joinToString("\n") +
-                "\n__________\n" +
-                "0 - Меню"
+)
+
+fun Question.asConsoleString(): String {
+    return "${correctAnswer.origin}:\n" +
+            variants.mapIndexed { index, word ->
+                "${index + 1} - ${word.translate}"
+            }.joinToString("\n") +
+            "\n__________\n" +
+            "0 - Меню"
 }
 
 class ConsoleTrainer() {
@@ -46,12 +47,11 @@ class ConsoleTrainer() {
                 println("Все слова в словаре выучены!\n")
                 return
             } else {
-                println(questionWord)
+                println(questionWord?.asConsoleString())
                 val userAnswerInput = readln().toIntOrNull()
                 if (userAnswerInput == 0) return
-                if (checkUserAnswer(userAnswerInput?.minus(1))) {
+                if (checkAnswer(userAnswerInput?.minus(1))) {
                     println("Правильно!\n")
-                    saveDictionary()
                 } else {
                     println(
                         "Неправильно! ${questionWord?.correctAnswer?.origin} " +
@@ -62,7 +62,7 @@ class ConsoleTrainer() {
         }
     }
 
-    fun displayStatistics(): Statistics {
+    fun getStatistics(): Statistics {
         val totalCount: Int = dictionary.size
         val learnedCount: Int = dictionary.count { it.correctAnswersCount >= NUMBER_OF_SUCCESS_TRIES }
         val percent: Double = learnedCount * ONE_HUNDRED_PERCENT / totalCount
@@ -86,7 +86,7 @@ class ConsoleTrainer() {
         )
     }
 
-    fun checkUserAnswer(userAnswerIndex: Int?): Boolean {
+    fun checkAnswer(userAnswerIndex: Int?): Boolean {
         val correctAnswerId = questionWord?.variants?.indexOf(questionWord?.correctAnswer)
         if (userAnswerIndex == null) return false
         val userAnswerId: Int = when (userAnswerIndex) {
@@ -104,7 +104,7 @@ class ConsoleTrainer() {
 
     private fun loadDictionary(): List<Word> {
         val dictionary: MutableList<Word> = mutableListOf()
-        val wordsFile: File = File(NAME_OF_DICTIONARY)
+        val wordsFile = File(NAME_OF_DICTIONARY)
         wordsFile.forEachLine {
             val line: List<String> = it.split("|")
             val word = Word(
@@ -118,9 +118,12 @@ class ConsoleTrainer() {
     }
 
     private fun saveDictionary() {
-        File(NAME_OF_DICTIONARY).writeText(dictionary.joinToString("\n") {
-            "${it.origin}|${it.translate}|${it.correctAnswersCount}"
-        })
+        File(NAME_OF_DICTIONARY).apply {
+            this.writeText("")
+            dictionary.forEach {
+                appendText("${it.origin}|${it.translate}|${it.correctAnswersCount}\n")
+            }
+        }
     }
 }
 
