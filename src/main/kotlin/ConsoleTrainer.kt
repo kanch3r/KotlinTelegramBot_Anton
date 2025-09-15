@@ -49,14 +49,20 @@ class ConsoleTrainer() {
             } else {
                 println(questionWord?.asConsoleString())
                 val userAnswerInput = readln().toIntOrNull()
-                if (userAnswerInput == 0) return
-                if (checkAnswer(userAnswerInput?.minus(1))) {
-                    println("Правильно!\n")
-                } else {
-                    println(
-                        "Неправильно! ${questionWord?.correctAnswer?.origin} " +
-                                "- это ${questionWord?.correctAnswer?.translate}\n"
-                    )
+                when (userAnswerInput) {
+                    in 1..4 -> {
+                        if (checkAnswer(userAnswerInput?.minus(1))) {
+                            println("Правильно!\n")
+                        } else {
+                            println(
+                                "Неправильно! ${questionWord?.correctAnswer?.origin} " +
+                                        "- это ${questionWord?.correctAnswer?.translate}\n"
+                            )
+                        }
+                    }
+
+                    0 -> return
+                    else -> println("Введите вариант ответа от 1 до 4, или 0 для выхода.\n")
                 }
             }
         }
@@ -81,7 +87,7 @@ class ConsoleTrainer() {
         }
         val correctAnswer = questionWords.random()
         return Question(
-            variants = questionWords,
+            variants = questionWords.shuffled(),
             correctAnswer = correctAnswer
         )
     }
@@ -103,18 +109,22 @@ class ConsoleTrainer() {
     }
 
     private fun loadDictionary(): List<Word> {
-        val dictionary: MutableList<Word> = mutableListOf()
-        val wordsFile = File(NAME_OF_DICTIONARY)
-        wordsFile.forEachLine {
-            val line: List<String> = it.split("|")
-            val word = Word(
-                origin = line[0],
-                translate = line[1],
-                correctAnswersCount = line[2].toIntOrNull() ?: 0
-            )
-            dictionary.add(word)
+        try {
+            val dictionary: MutableList<Word> = mutableListOf()
+            val wordsFile = File(NAME_OF_DICTIONARY)
+            wordsFile.forEachLine {
+                val line: List<String> = it.split("|")
+                val word = Word(
+                    origin = line[0],
+                    translate = line[1],
+                    correctAnswersCount = line[2].toIntOrNull() ?: 0
+                )
+                dictionary.add(word)
+            }
+            return dictionary
+        } catch (e: IndexOutOfBoundsException) {
+            throw IllegalStateException("некорректный файл")
         }
-        return dictionary
     }
 
     private fun saveDictionary() {
