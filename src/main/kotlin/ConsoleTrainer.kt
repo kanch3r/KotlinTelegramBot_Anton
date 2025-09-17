@@ -50,7 +50,7 @@ class ConsoleTrainer() {
                 println(questionWord?.asConsoleString())
                 val userAnswerInput = readln().toIntOrNull()
                 when (userAnswerInput) {
-                    in 1..4 -> {
+                    in 1..QUANTITY_OF_ANSWERS -> {
                         if (checkAnswer(userAnswerInput?.minus(1))) {
                             println("Правильно!\n")
                         } else {
@@ -71,7 +71,11 @@ class ConsoleTrainer() {
     fun getStatistics(): Statistics {
         val totalCount: Int = dictionary.size
         val learnedCount: Int = dictionary.count { it.correctAnswersCount >= NUMBER_OF_SUCCESS_TRIES }
-        val percent: Double = learnedCount * ONE_HUNDRED_PERCENT / totalCount
+        val percent: Double = if (totalCount == 0) {
+            0.0
+        } else {
+            learnedCount * ONE_HUNDRED_PERCENT / totalCount
+        }
         return Statistics(totalCount, learnedCount, percent)
     }
 
