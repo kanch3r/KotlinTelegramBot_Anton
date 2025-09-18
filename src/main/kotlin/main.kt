@@ -2,7 +2,12 @@ package org.example
 
 fun main() {
 
-    val consoleTrainer = ConsoleTrainer()
+    val consoleTrainer = try {
+        ConsoleTrainer()
+    } catch (e: Exception) {
+        println("Невозможно загрузить словарь")
+        return
+    }
 
     while (true) {
 
