@@ -61,14 +61,15 @@ fun getUpdateId(updates: String, positionUpdateIdRegex: Regex): String? {
 fun getChatId(updates: String, userChatIdRegex: Regex): Int {
     val matchChatId = userChatIdRegex.find(updates)
     val groupsChatId = matchChatId?.groups
-    val resultChatId = groupsChatId?.get(1)?.value?.toInt() ?: 0
+    val resultChatId = groupsChatId?.get(1)?.value?.toInt()
+        ?: throw IllegalArgumentException("Chat ID not found in updates")
     return resultChatId
 }
 
 fun getUserChatMessage(updates: String, messageTextRegex: Regex): String {
     val matchResultText = messageTextRegex.find(updates)
     val groupsText = matchResultText?.groups
-    val resultText = groupsText?.get(1)?.value.toString()
+    val resultText = groupsText?.get(1)?.value ?: "Message not found in updates"
     return resultText
 }
 
