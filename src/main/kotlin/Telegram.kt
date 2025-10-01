@@ -4,7 +4,6 @@ fun main(args: Array<String>) {
 
     val botToken = args[0]
     val telegramBotService = TelegramBotService(botToken)
-    val telegramUpdatesParser = TelegramUpdatesParser()
     var updateId = 0
 
     while (true) {
@@ -12,15 +11,15 @@ fun main(args: Array<String>) {
         val updates = telegramBotService.getUpdates(updateId)
         println(updates)
 
-        val resultId = telegramUpdatesParser.getUpdateId(updates)
+        val resultId = TelegramUpdatesParser.getUpdateId(updates)
         if (resultId != null) {
             updateId = resultId + 1
         } else {
             continue
         }
 
-        val resultChatId = telegramUpdatesParser.getChatId(updates)
-        val resultText = telegramUpdatesParser.getUserChatMessage(updates)
+        val resultChatId = TelegramUpdatesParser.getChatId(updates)
+        val resultText = TelegramUpdatesParser.getUserChatMessage(updates)
 
         telegramBotService.sendMessage(resultChatId, resultText)
         println("Пользователю с ID $resultChatId было отправлено сообщение: $resultText")
