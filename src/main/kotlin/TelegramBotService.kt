@@ -6,6 +6,10 @@ import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 
+const val START_BUTTON: String = "/start"
+const val LEARN_WORDS_BUTTON: String = "learn_words_button"
+const val STATISTICS_BUTTON: String = "statistics_button"
+
 data class TelegramBotService(val botToken: String) {
     companion object {
         const val BASE_URL_TELEGRAM_API: String = "https://api.telegram.org/bot"
@@ -41,11 +45,11 @@ data class TelegramBotService(val botToken: String) {
             			[
             				{
             					"text": "learn words",
-            					"callback_data": "learn_words_button"
+            					"callback_data": $LEARN_WORDS_BUTTON
             				},
             				{
             					"text": "statistics",
-            					"callback_data": "statistics_button"
+            					"callback_data": $STATISTICS_BUTTON
             				}
             			]
             		]

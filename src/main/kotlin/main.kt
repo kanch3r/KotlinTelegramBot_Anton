@@ -3,7 +3,7 @@ package org.example
 fun main() {
 
     val consoleTrainer = try {
-        ConsoleTrainer()
+        LearnWordsTrainer()
     } catch (e: Exception) {
         println("Невозможно загрузить словарь")
         return

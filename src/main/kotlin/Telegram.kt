@@ -5,7 +5,7 @@ fun main(args: Array<String>) {
     val botToken = args[0]
     val telegramBotService = TelegramBotService(botToken)
     var updateId = 0
-    val consoleTrainer = ConsoleTrainer()
+    val learnWordsTrainer = LearnWordsTrainer()
 
     while (true) {
         Thread.sleep(2000)
@@ -24,12 +24,12 @@ fun main(args: Array<String>) {
         val resultCallBackData = TelegramUpdatesParser.getUserCallBackData(updates)
 
         when {
-            resultText.lowercase() == "/start" -> telegramBotService.sendMenu(resultChatId)
-            resultCallBackData.lowercase() == "learn_words_button" -> telegramBotService.sendMessage(
+            resultText.lowercase() == START_BUTTON -> telegramBotService.sendMenu(resultChatId)
+            resultCallBackData.lowercase() == LEARN_WORDS_BUTTON -> telegramBotService.sendMessage(
                 resultChatId,
                 "начать учить слова"
             )
-            resultCallBackData.lowercase() == "statistics_button" -> telegramBotService.sendMessage(
+            resultCallBackData.lowercase() == STATISTICS_BUTTON -> telegramBotService.sendMessage(
                 resultChatId,
                 "показывать статистику"
             )
