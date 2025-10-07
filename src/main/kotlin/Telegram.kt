@@ -25,14 +25,20 @@ fun main(args: Array<String>) {
 
         when {
             resultText.lowercase() == START_BUTTON -> telegramBotService.sendMenu(resultChatId)
-            resultCallBackData.lowercase() == LEARN_WORDS_BUTTON -> telegramBotService.sendMessage(
-                resultChatId,
-                "начать учить слова"
-            )
-            resultCallBackData.lowercase() == STATISTICS_BUTTON -> telegramBotService.sendMessage(
-                resultChatId,
-                "показывать статистику"
-            )
+
+            resultCallBackData.lowercase() == LEARN_WORDS_BUTTON -> {
+                checkNextQuestionAndSend(learnWordsTrainer, telegramBotService, resultChatId)
+            }
+
+            resultCallBackData.startsWith(CALLBACK_DATA_ANSWER_PREFIX) -> {
+                checkUserAnswerAndSendReply(learnWordsTrainer, telegramBotService, resultChatId, resultCallBackData)
+                Thread.sleep(500)
+                checkNextQuestionAndSend(learnWordsTrainer, telegramBotService, resultChatId)
+            }
+
+            resultCallBackData.lowercase() == STATISTICS_BUTTON ->
+                telegramBotService.sendMessage(resultChatId, "${learnWordsTrainer.getStatistics()}")
+
             else -> telegramBotService.sendMessage(resultChatId, resultText)
         }
     }

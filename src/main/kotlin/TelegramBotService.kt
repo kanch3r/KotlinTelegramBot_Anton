@@ -9,6 +9,7 @@ import java.net.http.HttpResponse
 const val START_BUTTON: String = "/start"
 const val LEARN_WORDS_BUTTON: String = "learn_words_button"
 const val STATISTICS_BUTTON: String = "statistics_button"
+const val CALLBACK_DATA_ANSWER_PREFIX: String = "answer_"
 
 data class TelegramBotService(val botToken: String) {
     companion object {
@@ -65,5 +66,79 @@ data class TelegramBotService(val botToken: String) {
 
         val responseUpdates: HttpResponse<String> = client.send(requestUpdates, HttpResponse.BodyHandlers.ofString())
         return responseUpdates.body()
+    }
+
+    fun sendQuestion(chatId: Int, question: Question?): String {
+        val urlSendMessage = "$BASE_URL_TELEGRAM_API$botToken/$SEND_MESSAGE_METHOD"
+
+        val buttons = question?.variants?.mapIndexed { index, word ->
+            """
+            {
+            	"text": "${word.translate}",
+            	"callback_data": "$CALLBACK_DATA_ANSWER_PREFIX${index}"
+            }
+            """.trimIndent()
+        }
+
+        val questionBody = """
+            {
+            	"chat_id": $chatId,
+            	"text": "${question?.correctAnswer?.origin}",
+            	"reply_markup": {
+            		"inline_keyboard": [
+            			[
+            				${buttons?.get(0)},
+            				${buttons?.get(1)}
+            			],
+            			[
+                            ${buttons?.get(2)},
+            				${buttons?.get(3)}
+            			]
+            		]
+            	}
+            }
+        """.trimIndent()
+
+        val client: HttpClient = HttpClient.newBuilder().build()
+        val requestUpdates: HttpRequest = HttpRequest.newBuilder().uri(URI.create(urlSendMessage))
+            .header("Content-type", "application/json")
+            .POST(HttpRequest.BodyPublishers.ofString(questionBody))
+            .build()
+
+        val responseUpdates: HttpResponse<String> =
+            client.send(requestUpdates, HttpResponse.BodyHandlers.ofString())
+        return responseUpdates.body()
+    }
+}
+
+fun checkNextQuestionAndSend(
+    trainer: LearnWordsTrainer,
+    telegramBotService: TelegramBotService,
+    chatId: Int,
+) {
+    trainer.questionWord = trainer.getNextQuestion()
+    if (trainer.questionWord == null) {
+        telegramBotService.sendMessage(chatId, "Все слова выучены!")
+        return
+    } else {
+        telegramBotService.sendQuestion(chatId, trainer.questionWord)
+    }
+}
+
+fun checkUserAnswerAndSendReply(
+    trainer: LearnWordsTrainer,
+    telegramBotService: TelegramBotService,
+    chatId: Int,
+    callBackData: String,
+) {
+    val callBackDataIndex = callBackData.substringAfter(CALLBACK_DATA_ANSWER_PREFIX).toInt()
+    if (trainer.checkAnswer(callBackDataIndex)) {
+        telegramBotService.sendMessage(chatId, "Правильно!")
+    } else {
+        telegramBotService.sendMessage(
+            chatId,
+            "Неправильно! ${trainer.questionWord?.correctAnswer?.origin} - это " +
+                    "${trainer.questionWord?.correctAnswer?.translate}"
+        )
     }
 }

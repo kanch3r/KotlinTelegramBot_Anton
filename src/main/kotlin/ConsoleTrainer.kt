@@ -33,7 +33,7 @@ fun Question.asConsoleString(): String {
 }
 
 class LearnWordsTrainer() {
-    private var questionWord: Question? = null
+    var questionWord: Question? = null
     private val dictionary: List<Word> = loadDictionary()
 
     fun learningWord() {
