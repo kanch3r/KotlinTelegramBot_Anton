@@ -1,3 +1,5 @@
+@file:JvmName("LearnWordsTrainerKt")
+
 package org.example
 
 import java.io.File
@@ -6,12 +8,6 @@ const val NUMBER_OF_SUCCESS_TRIES: Int = 3
 const val ONE_HUNDRED_PERCENT: Double = 100.0
 const val QUANTITY_OF_ANSWERS: Int = 4
 const val NAME_OF_DICTIONARY: String = "words.txt"
-
-data class Word(
-    val origin: String,
-    val translate: String,
-    var correctAnswersCount: Int = 0,
-)
 
 data class Statistics(
     val total: Int,
@@ -36,7 +32,7 @@ fun Question.asConsoleString(): String {
             "0 - Меню"
 }
 
-class ConsoleTrainer() {
+class LearnWordsTrainer() {
     private var questionWord: Question? = null
     private val dictionary: List<Word> = loadDictionary()
 
