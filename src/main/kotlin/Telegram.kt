@@ -26,17 +26,17 @@ fun main(args: Array<String>) {
         when {
             resultText.lowercase() == START_BUTTON -> telegramBotService.sendMenu(resultChatId)
 
-            resultCallBackData.lowercase() == LEARN_WORDS_BUTTON -> {
-                checkNextQuestionAndSend(learnWordsTrainer, telegramBotService, resultChatId)
+            resultCallBackData == LEARN_WORDS_BUTTON -> {
+                telegramBotService.checkNextQuestionAndSend(learnWordsTrainer, resultChatId)
             }
 
             resultCallBackData.startsWith(CALLBACK_DATA_ANSWER_PREFIX) -> {
-                checkUserAnswerAndSendReply(learnWordsTrainer, telegramBotService, resultChatId, resultCallBackData)
+                telegramBotService.checkUserAnswerAndSendReply(learnWordsTrainer, resultChatId, resultCallBackData)
                 Thread.sleep(500)
-                checkNextQuestionAndSend(learnWordsTrainer, telegramBotService, resultChatId)
+                telegramBotService.checkNextQuestionAndSend(learnWordsTrainer, resultChatId)
             }
 
-            resultCallBackData.lowercase() == STATISTICS_BUTTON ->
+            resultCallBackData == STATISTICS_BUTTON ->
                 telegramBotService.sendMessage(resultChatId, "${learnWordsTrainer.getStatistics()}")
 
             else -> telegramBotService.sendMessage(resultChatId, resultText)
