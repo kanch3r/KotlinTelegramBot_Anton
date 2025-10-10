@@ -1,4 +1,12 @@
-package org.example
+package org.example.learningbot.telegram
+
+import org.example.learningbot.telegram.api.CALLBACK_DATA_ANSWER_PREFIX
+import org.example.learningbot.telegram.api.LEARN_WORDS_BUTTON
+import org.example.learningbot.trainer.LearnWordsTrainer
+import org.example.learningbot.telegram.api.START_BUTTON
+import org.example.learningbot.telegram.api.STATISTICS_BUTTON
+import org.example.learningbot.telegram.api.TelegramBotService
+import org.example.learningbot.telegram.api.TelegramUpdatesParser
 
 fun main(args: Array<String>) {
 

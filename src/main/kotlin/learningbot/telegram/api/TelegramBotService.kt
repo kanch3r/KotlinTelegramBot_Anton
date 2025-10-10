@@ -1,5 +1,7 @@
-package org.example
+package org.example.learningbot.telegram.api
 
+import org.example.learningbot.trainer.LearnWordsTrainer
+import org.example.learningbot.trainer.model.Question
 import java.net.URI
 import java.net.URLEncoder
 import java.net.http.HttpClient

@@ -1,4 +1,4 @@
-package org.example
+package org.example.learningbot.telegram.api
 
 object TelegramUpdatesParser {
 
