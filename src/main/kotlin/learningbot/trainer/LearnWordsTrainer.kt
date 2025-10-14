@@ -1,7 +1,9 @@
-@file:JvmName("LearnWordsTrainerKt")
+package org.example.learningbot.trainer
 
-package org.example
-
+import org.example.learningbot.trainer.model.Question
+import org.example.learningbot.trainer.model.Statistics
+import org.example.learningbot.trainer.model.Word
+import org.example.learningbot.trainer.model.asConsoleString
 import java.io.File
 
 const val NUMBER_OF_SUCCESS_TRIES: Int = 3
@@ -9,31 +11,8 @@ const val ONE_HUNDRED_PERCENT: Double = 100.0
 const val QUANTITY_OF_ANSWERS: Int = 4
 const val NAME_OF_DICTIONARY: String = "words.txt"
 
-data class Statistics(
-    val total: Int,
-    val learned: Int,
-    val percent: Double,
-) {
-    override fun toString() =
-        "Выучено $learned из $total слов | ${"%.0f".format(percent)}%"
-}
-
-data class Question(
-    val variants: List<Word>,
-    val correctAnswer: Word,
-)
-
-fun Question.asConsoleString(): String {
-    return "${correctAnswer.origin}:\n" +
-            variants.mapIndexed { index, word ->
-                "${index + 1} - ${word.translate}"
-            }.joinToString("\n") +
-            "\n__________\n" +
-            "0 - Меню"
-}
-
 class LearnWordsTrainer() {
-    private var questionWord: Question? = null
+    var questionWord: Question? = null
     private val dictionary: List<Word> = loadDictionary()
 
     fun learningWord() {
@@ -135,13 +114,4 @@ class LearnWordsTrainer() {
             }
         }
     }
-}
-
-fun drawMainMenu() {
-    println(
-        "Меню: \n" +
-                "1 – Учить слова\n" +
-                "2 – Статистика\n" +
-                "0 – Выход"
-    )
 }

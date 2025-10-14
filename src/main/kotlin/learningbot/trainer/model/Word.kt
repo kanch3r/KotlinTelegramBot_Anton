@@ -1,4 +1,4 @@
-package org.example
+package org.example.learningbot.trainer.model
 
 data class Word(
     val origin: String,

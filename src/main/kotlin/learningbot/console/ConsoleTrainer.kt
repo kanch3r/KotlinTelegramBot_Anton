@@ -1,4 +1,6 @@
-package org.example
+package org.example.learningbot.console
+
+import org.example.learningbot.trainer.LearnWordsTrainer
 
 fun main() {
 
@@ -22,4 +24,13 @@ fun main() {
             else -> println("Введите число 1, 2 или 0")
         }
     }
+}
+
+fun drawMainMenu() {
+    println(
+        "Меню: \n" +
+                "1 – Учить слова\n" +
+                "2 – Статистика\n" +
+                "0 – Выход"
+    )
 }
