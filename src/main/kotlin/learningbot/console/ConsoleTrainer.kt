@@ -1,6 +1,16 @@
 package org.example.learningbot.console
 
 import org.example.learningbot.trainer.LearnWordsTrainer
+import org.example.learningbot.trainer.model.Question
+
+fun Question.asConsoleString(): String {
+    return "${correctAnswer.origin}:\n" +
+            variants.mapIndexed { index, word ->
+                "${index + 1} - ${word.translate}"
+            }.joinToString("\n") +
+            "\n__________\n" +
+            "0 - Меню"
+}
 
 fun main() {
 
