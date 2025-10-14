@@ -3,7 +3,7 @@ package org.example.learningbot.trainer
 import org.example.learningbot.trainer.model.Question
 import org.example.learningbot.trainer.model.Statistics
 import org.example.learningbot.trainer.model.Word
-import org.example.learningbot.trainer.model.asConsoleString
+import org.example.learningbot.console.asConsoleString
 import java.io.File
 
 const val NUMBER_OF_SUCCESS_TRIES: Int = 3
