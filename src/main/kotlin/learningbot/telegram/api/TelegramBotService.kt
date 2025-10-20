@@ -11,6 +11,7 @@ import java.net.http.HttpResponse
 const val START_BUTTON: String = "/start"
 const val LEARN_WORDS_BUTTON: String = "learn_words_button"
 const val STATISTICS_BUTTON: String = "statistics_button"
+const val RESET_STATISTICS_BUTTON: String = "reset_statistics_button"
 const val CALLBACK_DATA_ANSWER_PREFIX: String = "answer_"
 const val QTY_OF_WORDS_IN_A_ROW: Int = 2
 
@@ -28,6 +29,43 @@ data class TelegramBotService(val botToken: String) {
         val requestUpdates: HttpRequest = HttpRequest.newBuilder().uri(URI.create(urlGetUpdates)).build()
         val responseUpdates: HttpResponse<String> = client.send(requestUpdates, HttpResponse.BodyHandlers.ofString())
         return responseUpdates.body()
+    }
+
+    fun processingUpdate(update: Update, json: Json, trainers: HashMap<Long, LearnWordsTrainer>) {
+        val resultChatId = update.message?.chat?.id ?: update.callbackQuery?.message?.chat?.id ?: return
+        val resultText = update.message?.text
+        val resultCallBackData = update.callbackQuery?.data
+
+        val personalTrainer = trainers.getOrPut(resultChatId) {
+            LearnWordsTrainer("$resultChatId.txt")
+        }
+
+        when {
+            resultText?.lowercase() == START_BUTTON -> sendMenu(json, resultChatId)
+
+            resultCallBackData == LEARN_WORDS_BUTTON -> {
+                checkNextQuestionAndSend(personalTrainer, resultChatId, json)
+            }
+
+            resultCallBackData?.startsWith(CALLBACK_DATA_ANSWER_PREFIX) == true -> {
+                checkUserAnswerAndSendReply(
+                    personalTrainer,
+                    resultChatId,
+                    resultCallBackData,
+                    json
+                )
+                Thread.sleep(500)
+                checkNextQuestionAndSend(personalTrainer, resultChatId, json)
+            }
+
+            resultCallBackData == STATISTICS_BUTTON ->
+                sendMessage(json, resultChatId, "${personalTrainer.getStatistics()}")
+
+            resultCallBackData == RESET_STATISTICS_BUTTON ->
+                sendMessage(json, resultChatId, personalTrainer.resetStatistics())
+
+            else -> sendMessage(json, resultChatId, resultText)
+        }
     }
 
     fun sendMessage(json: Json, chatId: Long?, textMessage: String?): String {
@@ -65,6 +103,12 @@ data class TelegramBotService(val botToken: String) {
                         InlineKeyboard(
                             text = "Статистика",
                             callbackData = STATISTICS_BUTTON
+                        )
+                    ),
+                    listOf(
+                        InlineKeyboard(
+                            text = "Сбросить прогресс",
+                            callbackData = RESET_STATISTICS_BUTTON
                         )
                     )
                 )

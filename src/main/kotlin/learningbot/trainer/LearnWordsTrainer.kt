@@ -9,9 +9,9 @@ import java.io.File
 const val NUMBER_OF_SUCCESS_TRIES: Int = 3
 const val ONE_HUNDRED_PERCENT: Double = 100.0
 const val QUANTITY_OF_ANSWERS: Int = 4
-const val NAME_OF_DICTIONARY: String = "words.txt"
+const val DICTIONARY_SOURCE: String = "words.txt"
 
-class LearnWordsTrainer() {
+class LearnWordsTrainer(val fileName: String = DICTIONARY_SOURCE) {
     var questionWord: Question? = null
     private val dictionary: List<Word> = loadDictionary()
 
@@ -54,6 +54,12 @@ class LearnWordsTrainer() {
         return Statistics(totalCount, learnedCount, percent)
     }
 
+    fun resetStatistics(): String {
+        dictionary.forEach { it.correctAnswersCount = 0 }
+        saveDictionary()
+        return "Ваш прогресс сброшен"
+    }
+
     fun getNextQuestion(): Question? {
         val notLearnedList = dictionary.filter { it.correctAnswersCount < NUMBER_OF_SUCCESS_TRIES }
         if (notLearnedList.isEmpty()) return null
@@ -90,7 +96,10 @@ class LearnWordsTrainer() {
     private fun loadDictionary(): List<Word> {
         try {
             val dictionary: MutableList<Word> = mutableListOf()
-            val wordsFile = File(NAME_OF_DICTIONARY)
+            val wordsFile = File(fileName)
+            if (!wordsFile.exists()) {
+                File(DICTIONARY_SOURCE).copyTo(wordsFile)
+            }
             wordsFile.forEachLine {
                 val line: List<String> = it.split("|")
                 val word = Word(
@@ -107,7 +116,7 @@ class LearnWordsTrainer() {
     }
 
     private fun saveDictionary() {
-        File(NAME_OF_DICTIONARY).apply {
+        File(fileName).apply {
             this.writeText("")
             dictionary.forEach {
                 appendText("${it.origin}|${it.translate}|${it.correctAnswersCount}\n")
