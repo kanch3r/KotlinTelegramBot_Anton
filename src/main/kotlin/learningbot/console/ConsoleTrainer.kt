@@ -1,7 +1,7 @@
-package org.example.learningbot.console
+package learningbot.console
 
-import org.example.learningbot.trainer.LearnWordsTrainer
-import org.example.learningbot.trainer.model.Question
+import learningbot.trainer.LearnWordsTrainer
+import learningbot.trainer.model.Question
 
 fun Question.asConsoleString(): String {
     return "${correctAnswer.origin}:\n" +
