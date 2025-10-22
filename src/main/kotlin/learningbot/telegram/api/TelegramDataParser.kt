@@ -1,4 +1,4 @@
-package org.example.learningbot.telegram.api
+package learningbot.telegram.api
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

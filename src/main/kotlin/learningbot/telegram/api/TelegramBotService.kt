@@ -1,8 +1,8 @@
-package org.example.learningbot.telegram.api
+package learningbot.telegram.api
 
 import kotlinx.serialization.json.Json
-import org.example.learningbot.trainer.LearnWordsTrainer
-import org.example.learningbot.trainer.model.Question
+import learningbot.trainer.LearnWordsTrainer
+import learningbot.trainer.model.Question
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest

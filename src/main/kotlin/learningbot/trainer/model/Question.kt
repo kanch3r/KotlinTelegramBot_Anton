@@ -1,4 +1,4 @@
-package org.example.learningbot.trainer.model
+package learningbot.trainer.model
 
 data class Question(
     val variants: List<Word>,
