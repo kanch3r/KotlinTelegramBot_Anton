@@ -25,6 +25,7 @@ data class TelegramBotService(val botToken: String) {
     }
 
     val client: HttpClient = HttpClient.newBuilder().build()
+    val json = Json
 
     fun getUpdates(updateId: Long): String {
         val urlGetUpdates = "$BASE_URL_TELEGRAM_API$botToken/${GET_UPDATES_METHOD}?offset=$updateId"
@@ -33,22 +34,21 @@ data class TelegramBotService(val botToken: String) {
         return responseUpdates.body()
     }
 
-    fun processingUpdate(update: Update, json: Json, trainers: HashMap<Long, LearnWordsTrainer>) {
+    fun processingUpdate(update: Update, trainers: HashMap<Long, LearnWordsTrainer>) {
         val resultChatId = update.message?.chat?.id ?: update.callbackQuery?.message?.chat?.id ?: return
         val resultText = update.message?.text
         val resultCallBackData = update.callbackQuery?.data
         val resultMessageId = update.message?.messageId ?: update.callbackQuery?.message?.messageId ?: return
-        println(resultMessageId)
 
         val personalTrainer = trainers.getOrPut(resultChatId) {
             LearnWordsTrainer("$resultChatId.txt")
         }
 
         when {
-            resultText?.lowercase() == START_BUTTON -> sendMenu(json, resultChatId)
+            resultText?.lowercase() == START_BUTTON -> sendMenu(resultChatId)
 
             resultCallBackData == LEARN_WORDS_BUTTON -> {
-                checkNextQuestionAndSend(personalTrainer, resultChatId, json)
+                checkNextQuestionAndSend(personalTrainer, resultChatId)
             }
 
             resultCallBackData?.startsWith(CALLBACK_DATA_ANSWER_PREFIX) == true -> {
@@ -56,34 +56,32 @@ data class TelegramBotService(val botToken: String) {
                     personalTrainer,
                     resultChatId,
                     resultMessageId,
-                    resultCallBackData,
-                    json
+                    resultCallBackData
                 )
                 Thread.sleep(500)
-//                deleteMessage(json,resultChatId, resultMessageId)
-                deleteMessage(json, resultChatId, resultMessageId.plus(1))
-                checkNextQuestionAndSend(personalTrainer, resultChatId, json)
+                deleteMessage(resultChatId, resultMessageId.plus(1))
+                checkNextQuestionAndSend(personalTrainer, resultChatId)
             }
 
             resultCallBackData == STATISTICS_BUTTON -> {
-                sendMessage(json, resultChatId, "${personalTrainer.getStatistics()}")
+                sendMessage(resultChatId, "${personalTrainer.getStatistics()}")
             }
 
             resultCallBackData == RESET_STATISTICS_BUTTON -> {
-                sendMessage(json, resultChatId, personalTrainer.resetStatistics())
+                sendMessage(resultChatId, personalTrainer.resetStatistics())
             }
 
             resultCallBackData == CALLBACK_DATA_RETURN_TO_MENU -> {
-                sendMenu(json, resultChatId)
+                sendMenu(resultChatId)
                 Thread.sleep(500)
-                deleteMessage(json, resultChatId, resultMessageId)
+                deleteMessage(resultChatId, resultMessageId)
             }
 
-            else -> sendMessage(json, resultChatId, resultText)
+            else -> sendMessage(resultChatId, resultText)
         }
     }
 
-    fun sendMessage(json: Json, chatId: Long?, textMessage: String?): String {
+    fun sendMessage(chatId: Long, textMessage: String?): String {
         val urlSendMessage = "$BASE_URL_TELEGRAM_API$botToken/$SEND_MESSAGE_METHOD"
 
         val requestBody = SendMessageRequest(
@@ -102,7 +100,7 @@ data class TelegramBotService(val botToken: String) {
         return responseUpdates.body()
     }
 
-    fun deleteMessage(json: Json, chatId: Long?, messageId: Int): String {
+    fun deleteMessage(chatId: Long, messageId: Int): String {
         val urlDeleteMessage = "$BASE_URL_TELEGRAM_API$botToken/$DELETE_MESSAGE_METHOD"
 
         val requestBody = DeleteMessage(
@@ -121,7 +119,7 @@ data class TelegramBotService(val botToken: String) {
         return responseUpdates.body()
     }
 
-    fun sendMenu(json: Json, chatId: Long?): String {
+    fun sendMenu(chatId: Long): String {
         val urlSendMessage = "$BASE_URL_TELEGRAM_API$botToken/$SEND_MESSAGE_METHOD"
 
         val requestMainMenuBody = SendMessageRequest(
@@ -160,7 +158,7 @@ data class TelegramBotService(val botToken: String) {
         return responseUpdates.body()
     }
 
-    fun sendQuestion(json: Json, chatId: Long?, question: Question): String {
+    fun sendQuestion(chatId: Long, question: Question): String {
         val urlSendMessage = "$BASE_URL_TELEGRAM_API$botToken/$SEND_MESSAGE_METHOD"
         val questionWord = question.correctAnswer.origin
 
@@ -198,34 +196,32 @@ data class TelegramBotService(val botToken: String) {
 
     fun checkNextQuestionAndSend(
         trainer: LearnWordsTrainer,
-        chatId: Long?,
-        json: Json,
+        chatId: Long,
     ) {
         val nextQuestion = trainer.getNextQuestion()
         trainer.questionWord = nextQuestion
         if (nextQuestion == null) {
-            sendMessage(json, chatId, "Все слова выучены!")
+            sendMessage(chatId, "Все слова выучены!")
             return
         } else {
-            sendQuestion(json, chatId, nextQuestion)
+            sendQuestion(chatId, nextQuestion)
         }
     }
 
     fun checkUserAnswerAndSendReply(
         trainer: LearnWordsTrainer,
-        chatId: Long?,
+        chatId: Long,
         messageId: Int,
         callBackData: String?,
-        json: Json,
     ) {
         val correctAnswer = trainer.questionWord?.correctAnswer
         val callBackDataIndex = callBackData?.substringAfter(CALLBACK_DATA_ANSWER_PREFIX)?.toInt()
         if (trainer.checkAnswer(callBackDataIndex)) {
-            sendMessage(json, chatId, "Правильно!")
+            sendMessage(chatId, "Правильно!")
         } else {
-            sendMessage(json, chatId, "Неправильно! ${correctAnswer?.origin} - это ${correctAnswer?.translate}")
+            sendMessage(chatId, "Неправильно! ${correctAnswer?.origin} - это ${correctAnswer?.translate}")
         }
         Thread.sleep(500)
-        deleteMessage(json, chatId, messageId)
+        deleteMessage(chatId, messageId)
     }
 }

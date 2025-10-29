@@ -25,7 +25,7 @@ fun main(args: Array<String>) {
             .associateBy { it.message?.chat?.id }
             .values
         sortedLastUpdates.forEach {
-            telegramBotService.processingUpdate(it, json, trainers)
+            telegramBotService.processingUpdate(it, trainers)
         }
 
         updateId = sortedLastUpdates.last().updateId + 1
