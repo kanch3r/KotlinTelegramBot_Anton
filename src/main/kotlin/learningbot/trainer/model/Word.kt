@@ -1,4 +1,4 @@
-package org.example.learningbot.trainer.model
+package learningbot.trainer.model
 
 import kotlinx.serialization.Serializable
 

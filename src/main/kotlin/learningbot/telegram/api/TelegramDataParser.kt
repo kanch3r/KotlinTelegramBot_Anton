@@ -1,4 +1,4 @@
-package org.example.learningbot.telegram.api
+package learningbot.telegram.api
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -25,6 +25,8 @@ data class Message(
     val text: String,
     @SerialName("chat")
     val chat: Chat,
+    @SerialName("message_id")
+    val messageId: Int
 )
 
 @Serializable
@@ -49,6 +51,14 @@ data class SendMessageRequest(
     val text: String?,
     @SerialName("reply_markup")
     val replyMarkup: ReplyMarkup? = null,
+)
+
+@Serializable
+data class DeleteMessage(
+    @SerialName("chat_id")
+    val chatId: Long?,
+    @SerialName("message_id")
+    val messageId: Int?,
 )
 
 @Serializable

@@ -1,9 +1,9 @@
-package org.example.learningbot.trainer
+package learningbot.trainer
 
-import org.example.learningbot.trainer.model.Question
-import org.example.learningbot.trainer.model.Statistics
-import org.example.learningbot.trainer.model.Word
-import org.example.learningbot.console.asConsoleString
+import learningbot.trainer.model.Question
+import learningbot.trainer.model.Statistics
+import learningbot.trainer.model.Word
+import learningbot.console.asConsoleString
 import java.io.File
 
 const val NUMBER_OF_SUCCESS_TRIES: Int = 3

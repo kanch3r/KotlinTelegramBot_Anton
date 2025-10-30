@@ -1,9 +1,9 @@
-package org.example.learningbot.telegram
+package learningbot.telegram
 
 import kotlinx.serialization.json.Json
-import org.example.learningbot.telegram.api.Response
-import org.example.learningbot.trainer.LearnWordsTrainer
-import org.example.learningbot.telegram.api.TelegramBotService
+import learningbot.telegram.api.Response
+import learningbot.trainer.LearnWordsTrainer
+import learningbot.telegram.api.TelegramBotService
 
 fun main(args: Array<String>) {
 
@@ -25,7 +25,7 @@ fun main(args: Array<String>) {
             .associateBy { it.message?.chat?.id }
             .values
         sortedLastUpdates.forEach {
-            telegramBotService.processingUpdate(it, json, trainers)
+            telegramBotService.processingUpdate(it, trainers)
         }
 
         updateId = sortedLastUpdates.last().updateId + 1
