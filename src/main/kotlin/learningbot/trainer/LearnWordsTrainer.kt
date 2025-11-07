@@ -1,19 +1,22 @@
 package learningbot.trainer
 
+import learningbot.DatabaseUserDictionary
+import learningbot.FIleUserDictionary
 import learningbot.trainer.model.Question
 import learningbot.trainer.model.Statistics
 import learningbot.trainer.model.Word
 import learningbot.console.asConsoleString
-import java.io.File
 
 const val NUMBER_OF_SUCCESS_TRIES: Int = 3
 const val ONE_HUNDRED_PERCENT: Double = 100.0
 const val QUANTITY_OF_ANSWERS: Int = 4
-const val DICTIONARY_SOURCE: String = "words.txt"
+const val DICTIONARY_SOURCE_TXT: String = "words.txt"
+const val DICTIONARY_SOURCE_DB: String = "wordsDataBase.db"
 
-class LearnWordsTrainer(val fileName: String = DICTIONARY_SOURCE) {
+class LearnWordsTrainer(val fileName: String = DICTIONARY_SOURCE_TXT) {
+    val dict = FIleUserDictionary(fileName)
     var questionWord: Question? = null
-    private val dictionary: List<Word> = loadDictionary()
+    private val dictionary: List<Word> = dict.dictionary
 
     fun learningWord() {
         while (true) {
@@ -43,22 +46,9 @@ class LearnWordsTrainer(val fileName: String = DICTIONARY_SOURCE) {
         }
     }
 
-    fun getStatistics(): Statistics {
-        val totalCount: Int = dictionary.size
-        val learnedCount: Int = dictionary.count { it.correctAnswersCount >= NUMBER_OF_SUCCESS_TRIES }
-        val percent: Double = if (totalCount == 0) {
-            0.0
-        } else {
-            learnedCount * ONE_HUNDRED_PERCENT / totalCount
-        }
-        return Statistics(totalCount, learnedCount, percent)
-    }
+    fun getStatistics() = dict.getStatistics()
 
-    fun resetStatistics(): String {
-        dictionary.forEach { it.correctAnswersCount = 0 }
-        saveDictionary()
-        return "Ваш прогресс сброшен"
-    }
+    fun resetStatistics() = dict.resetStatistics()
 
     fun getNextQuestion(): Question? {
         val notLearnedList = dictionary.filter { it.correctAnswersCount < NUMBER_OF_SUCCESS_TRIES }
@@ -86,41 +76,10 @@ class LearnWordsTrainer(val fileName: String = DICTIONARY_SOURCE) {
         }
         if (correctAnswerId == userAnswerId) {
             questionWord?.correctAnswer?.correctAnswersCount++
-            saveDictionary()
+            dict.saveDictionary()
             return true
         } else {
             return false
-        }
-    }
-
-    private fun loadDictionary(): List<Word> {
-        try {
-            val dictionary: MutableList<Word> = mutableListOf()
-            val wordsFile = File(fileName)
-            if (!wordsFile.exists()) {
-                File(DICTIONARY_SOURCE).copyTo(wordsFile)
-            }
-            wordsFile.forEachLine {
-                val line: List<String> = it.split("|")
-                val word = Word(
-                    origin = line[0],
-                    translate = line[1],
-                    correctAnswersCount = line[2].toIntOrNull() ?: 0
-                )
-                dictionary.add(word)
-            }
-            return dictionary
-        } catch (e: IndexOutOfBoundsException) {
-            throw IllegalStateException("некорректный файл")
-        }
-    }
-
-    private fun saveDictionary() {
-        File(fileName).apply {
-            this.writeText("")
-            dictionary.forEach {
-                appendText("${it.origin}|${it.translate}|${it.correctAnswersCount}\n")
-            }
         }
     }
 }
