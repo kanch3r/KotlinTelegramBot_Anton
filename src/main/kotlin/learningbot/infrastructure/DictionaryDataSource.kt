@@ -1,25 +1,18 @@
-package learningbot
+package learningbot.infrastructure
 
 import learningbot.trainer.DICTIONARY_SOURCE_DB
 import learningbot.trainer.DICTIONARY_SOURCE_TXT
-import learningbot.trainer.model.Word
 import java.io.File
 import java.sql.DriverManager
 import java.sql.SQLException
 
-
 fun main() {
-
-//updateDictionary(File(DICTIONARY_SOURCE_TXT))
-    val dictionary = DatabaseUserDictionary(11112222)
-    dictionary.loadDictionary().forEach { println(it) }
-
-
+    updateDictionary(File(DICTIONARY_SOURCE_TXT))
 }
 
 fun updateDictionary(wordsFile: File) {
     try {
-        DriverManager.getConnection("jdbc:sqlite:wordsDataBase.db")
+        DriverManager.getConnection("jdbc:sqlite:$DICTIONARY_SOURCE_DB")
             .use { connection ->
                 connection.createStatement()
                     .use { statement ->

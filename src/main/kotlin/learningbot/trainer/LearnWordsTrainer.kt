@@ -1,9 +1,9 @@
 package learningbot.trainer
 
-import learningbot.DatabaseUserDictionary
-import learningbot.FIleUserDictionary
+import learningbot.infrastructure.DatabaseUserDictionary
+import learningbot.infrastructure.FIleUserDictionary
+import learningbot.infrastructure.IUserDictionary
 import learningbot.trainer.model.Question
-import learningbot.trainer.model.Statistics
 import learningbot.trainer.model.Word
 import learningbot.console.asConsoleString
 
@@ -12,11 +12,22 @@ const val ONE_HUNDRED_PERCENT: Double = 100.0
 const val QUANTITY_OF_ANSWERS: Int = 4
 const val DICTIONARY_SOURCE_TXT: String = "words.txt"
 const val DICTIONARY_SOURCE_DB: String = "wordsDataBase.db"
+const val DATABASE_INFRASTRUCTURE: Boolean = true // true - use Database.db; false - use file.txt
 
-class LearnWordsTrainer(val fileName: String = DICTIONARY_SOURCE_TXT) {
-    val dict = FIleUserDictionary(fileName)
+class LearnWordsTrainer(
+    val useDataBase: Boolean = DATABASE_INFRASTRUCTURE,
+    val fileNameTxt: String = DICTIONARY_SOURCE_TXT,
+    val chatId: Long = 0L,
+) {
+
+    private val methodDictionary: IUserDictionary = if (useDataBase) {
+        DatabaseUserDictionary(chatId)
+    } else {
+        FIleUserDictionary(fileNameTxt)
+    }
+
     var questionWord: Question? = null
-    private val dictionary: List<Word> = dict.dictionary
+    private val dictionary: List<Word> = methodDictionary.loadDictionary()
 
     fun learningWord() {
         while (true) {
@@ -46,10 +57,6 @@ class LearnWordsTrainer(val fileName: String = DICTIONARY_SOURCE_TXT) {
         }
     }
 
-    fun getStatistics() = dict.getStatistics()
-
-    fun resetStatistics() = dict.resetStatistics()
-
     fun getNextQuestion(): Question? {
         val notLearnedList = dictionary.filter { it.correctAnswersCount < NUMBER_OF_SUCCESS_TRIES }
         if (notLearnedList.isEmpty()) return null
@@ -76,10 +83,17 @@ class LearnWordsTrainer(val fileName: String = DICTIONARY_SOURCE_TXT) {
         }
         if (correctAnswerId == userAnswerId) {
             questionWord?.correctAnswer?.correctAnswersCount++
-            dict.saveDictionary()
+            val correctAnswer = questionWord?.correctAnswer
+            if (correctAnswer != null) {
+                methodDictionary.setCorrectAnswersCount(correctAnswer)
+            }
             return true
         } else {
             return false
         }
     }
+
+    fun getStatistics() = methodDictionary.getStatistics()
+
+    fun resetStatistics() = methodDictionary.resetProgress()
 }

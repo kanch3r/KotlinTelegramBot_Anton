@@ -1,4 +1,4 @@
-package learningbot
+package learningbot.infrastructure
 
 import learningbot.trainer.DICTIONARY_SOURCE_TXT
 import learningbot.trainer.NUMBER_OF_SUCCESS_TRIES
@@ -7,11 +7,11 @@ import learningbot.trainer.model.Statistics
 import learningbot.trainer.model.Word
 import java.io.File
 
-class FIleUserDictionary(val fileName: String = DICTIONARY_SOURCE_TXT) {
+class FIleUserDictionary(val fileName: String = DICTIONARY_SOURCE_TXT) : IUserDictionary {
 
     val dictionary: List<Word> = loadDictionary()
 
-    private fun loadDictionary(): List<Word> {
+    override fun loadDictionary(): List<Word> {
         try {
             val dictionary: MutableList<Word> = mutableListOf()
             val wordsFile = File(fileName)
@@ -33,16 +33,7 @@ class FIleUserDictionary(val fileName: String = DICTIONARY_SOURCE_TXT) {
         }
     }
 
-    fun saveDictionary() {
-        File(fileName).apply {
-            this.writeText("")
-            dictionary.forEach {
-                appendText("${it.origin}|${it.translate}|${it.correctAnswersCount}\n")
-            }
-        }
-    }
-
-    fun getStatistics(): Statistics {
+    override fun getStatistics(): Statistics {
         val totalCount: Int = dictionary.size
         val learnedCount: Int = dictionary.count { it.correctAnswersCount >= NUMBER_OF_SUCCESS_TRIES }
         val percent: Double = if (totalCount == 0) {
@@ -53,10 +44,24 @@ class FIleUserDictionary(val fileName: String = DICTIONARY_SOURCE_TXT) {
         return Statistics(totalCount, learnedCount, percent)
     }
 
-    fun resetStatistics(): String {
+    override fun resetProgress(): String {
         dictionary.forEach { it.correctAnswersCount = 0 }
         saveDictionary()
         return "Ваш прогресс сброшен"
     }
 
+    override fun setCorrectAnswersCount(word: Word) {
+        val existingWord = dictionary.find { it.origin == word.origin }
+        existingWord?.correctAnswersCount = word.correctAnswersCount
+        saveDictionary()
+    }
+
+    private fun saveDictionary() {
+        File(fileName).apply {
+            this.writeText("")
+            dictionary.forEach {
+                appendText("${it.origin}|${it.translate}|${it.correctAnswersCount}\n")
+            }
+        }
+    }
 }
