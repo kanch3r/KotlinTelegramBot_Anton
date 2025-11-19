@@ -4,12 +4,13 @@ import learningbot.trainer.LearnWordsTrainer
 import learningbot.trainer.model.Question
 
 fun Question.asConsoleString(): String {
-    return "${correctAnswer.origin}:\n" +
-            variants.mapIndexed { index, word ->
-                "${index + 1} - ${word.translate}"
-            }.joinToString("\n") +
-            "\n__________\n" +
-            "0 - Меню"
+    val variantsWords = variants
+        .mapIndexed { index, word -> "${index + 1} - ${word.translate}" }
+        .joinToString("\n")
+
+    val questionWithVariants = "${correctAnswer.origin}:\n${variantsWords}\n"
+    val bottomBorderWithMenu = "__________\n0 - Меню"
+    return questionWithVariants + bottomBorderWithMenu
 }
 
 fun main() {

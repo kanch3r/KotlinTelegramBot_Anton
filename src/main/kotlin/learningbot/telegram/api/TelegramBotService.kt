@@ -41,7 +41,7 @@ data class TelegramBotService(val botToken: String) {
         val resultMessageId = update.message?.messageId ?: update.callbackQuery?.message?.messageId ?: return
 
         val personalTrainer = trainers.getOrPut(resultChatId) {
-            LearnWordsTrainer("$resultChatId.txt")
+            LearnWordsTrainer(chatId = resultChatId)
         }
 
         when {
