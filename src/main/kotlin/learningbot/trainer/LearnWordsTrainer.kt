@@ -28,7 +28,7 @@ class LearnWordsTrainer(
     }
 
     var questionWord: Question? = null
-    private val dictionary: List<Word> = methodDictionary.loadDictionary()
+    val dictionary: List<Word> = methodDictionary.loadDictionary()
 
     fun learningWord() {
         while (true) {
@@ -113,5 +113,5 @@ class LearnWordsTrainer(
 
     fun getStatistics() = methodDictionary.getStatistics()
 
-    fun resetStatistics() = methodDictionary.resetProgress()
+    fun resetStatistics() = if (methodDictionary.resetProgress()) "Ваш прогресс сброшен" else "Ваш словарь пуст"
 }

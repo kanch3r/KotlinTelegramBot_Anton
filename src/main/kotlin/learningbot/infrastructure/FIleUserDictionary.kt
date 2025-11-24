@@ -45,10 +45,14 @@ class FIleUserDictionary(val fileName: String = DICTIONARY_SOURCE_TXT) : IUserDi
         return Statistics(totalCount, learnedCount, roundedPercent)
     }
 
-    override fun resetProgress(): String {
-        dictionary.forEach { it.correctAnswersCount = 0 }
-        saveDictionary()
-        return "Ваш прогресс сброшен"
+    override fun resetProgress() : Boolean {
+        return if (dictionary.isNotEmpty()) {
+            dictionary.forEach { it.correctAnswersCount = 0 }
+            saveDictionary()
+            true
+        } else {
+            false
+        }
     }
 
     override fun setCorrectAnswersCount(word: Word) {
