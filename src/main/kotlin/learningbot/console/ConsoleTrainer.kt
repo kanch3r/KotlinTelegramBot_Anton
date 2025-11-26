@@ -1,10 +1,18 @@
 package learningbot.console
 
 import learningbot.trainer.LearnWordsTrainer
+import learningbot.trainer.THRESHOLD_OF_VARIANTS
 import learningbot.trainer.model.Question
 
 fun Question.asConsoleString(): String {
-    val variantsWords = variants
+    val actualVariants = if (variants.size > THRESHOLD_OF_VARIANTS) {
+        println("Превышено максимальное количество вариантов для ответа.\n" +
+                "Будет показано только $THRESHOLD_OF_VARIANTS вариантов.")
+        variants.take(THRESHOLD_OF_VARIANTS)
+    } else {
+        variants
+    }
+    val variantsWords = actualVariants
         .mapIndexed { index, word -> "${index + 1} - ${word.translate}" }
         .joinToString("\n")
 

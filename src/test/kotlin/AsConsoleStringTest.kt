@@ -1,4 +1,5 @@
 import learningbot.console.asConsoleString
+import learningbot.trainer.THRESHOLD_OF_VARIANTS
 import learningbot.trainer.model.Question
 import learningbot.trainer.model.Word
 import org.junit.jupiter.api.Assertions.*
@@ -71,6 +72,18 @@ class AsConsoleStringTest {
         val result = question.asConsoleString()
 
         assertEquals(question.variants.size + 3, result.lines().size)
+    }
+
+    @Test
+    fun `should handle with 200 words`() {
+        val question = Question(
+            variants = List(200) { Word("origin", "translate") },
+            correctAnswer = Word("dog", "собака")
+        )
+
+        val result = question.asConsoleString()
+
+        assertEquals(THRESHOLD_OF_VARIANTS + 3, result.lines().size)
     }
 
     @Test

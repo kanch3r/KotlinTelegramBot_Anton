@@ -4,6 +4,8 @@ import learningbot.trainer.model.Statistics
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import java.io.File
+import kotlin.io.path.createTempFile
 
 class LearnWordsTrainerTest {
 
@@ -19,8 +21,8 @@ class LearnWordsTrainerTest {
 
     @Test
     fun `test statistics with corrupted file`() {
-        assertThrows<IllegalStateException>{
-        val trainer = LearnWordsTrainer(fileNameTxt = "corrupted_file_test.txt", useDataBase = false)
+        assertThrows<IllegalStateException> {
+            val trainer = LearnWordsTrainer(fileNameTxt = "corrupted_file_test.txt", useDataBase = false)
             trainer.getStatistics()
         }
     }
@@ -52,7 +54,7 @@ class LearnWordsTrainerTest {
         println(question)
 
         val result = if (question != null) {
-            question.variants.containsAll(unlearnedWordsList)
+            unlearnedWordsList.all { it in question.variants }
         } else false
 
         assertTrue(result)
@@ -67,7 +69,12 @@ class LearnWordsTrainerTest {
 
     @Test
     fun `test checkAnswer() with true`() {
-        val trainer = LearnWordsTrainer(fileNameTxt = "4_words_of_7.txt", useDataBase = false)
+        val tempFile = File.createTempFile("4_words_of_7_will be deleted after test", ".txt")
+            .apply { deleteOnExit() }
+
+        File("4_words_of_7.txt").copyTo(tempFile, overwrite = true)
+
+        val trainer = LearnWordsTrainer(fileNameTxt = tempFile.absolutePath, useDataBase = false)
 
         trainer.questionWord = trainer.getNextQuestion()
         val wordsToGuess = trainer.questionWord
@@ -94,7 +101,7 @@ class LearnWordsTrainerTest {
     }
 
     @Test
-    fun `test resetProgress() with 2 words in dictionary`() {
+    fun `test resetStatistics() with 2 words in dictionary`() {
         val trainer = LearnWordsTrainer(fileNameTxt = "2_words_in_dictionary.txt", useDataBase = false)
         val result = trainer.resetStatistics()
         assertEquals("Ваш прогресс сброшен", result)
