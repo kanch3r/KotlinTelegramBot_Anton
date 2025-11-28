@@ -7,5 +7,5 @@ interface IUserDictionary {
     fun loadDictionary(): List<Word>
     fun getStatistics(): Statistics
     fun setCorrectAnswersCount(word: Word)
-    fun resetProgress(): String
+    fun resetProgress(): Boolean
 }

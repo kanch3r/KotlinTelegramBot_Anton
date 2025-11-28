@@ -41,13 +41,18 @@ class FIleUserDictionary(val fileName: String = DICTIONARY_SOURCE_TXT) : IUserDi
         } else {
             learnedCount * ONE_HUNDRED_PERCENT / totalCount
         }
-        return Statistics(totalCount, learnedCount, percent)
+        val roundedPercent ="%.0f".format(percent).toDouble()
+        return Statistics(totalCount, learnedCount, roundedPercent)
     }
 
-    override fun resetProgress(): String {
-        dictionary.forEach { it.correctAnswersCount = 0 }
-        saveDictionary()
-        return "Ваш прогресс сброшен"
+    override fun resetProgress() : Boolean {
+        return if (dictionary.isNotEmpty()) {
+            dictionary.forEach { it.correctAnswersCount = 0 }
+            saveDictionary()
+            true
+        } else {
+            false
+        }
     }
 
     override fun setCorrectAnswersCount(word: Word) {

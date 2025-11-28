@@ -9,7 +9,8 @@ import learningbot.console.asConsoleString
 
 const val NUMBER_OF_SUCCESS_TRIES: Int = 3
 const val ONE_HUNDRED_PERCENT: Double = 100.0
-const val QUANTITY_OF_ANSWERS: Int = 4
+const val QUANTITY_OF_VARIANTS: Int = 4
+const val THRESHOLD_OF_VARIANTS: Int = 10
 const val DICTIONARY_SOURCE_TXT: String = "words.txt"
 const val DICTIONARY_SOURCE_DB: String = "wordsDataBase.db"
 const val DATABASE_INFRASTRUCTURE: Boolean = true // true - use Database.db; false - use file.txt
@@ -27,11 +28,16 @@ class LearnWordsTrainer(
     }
 
     var questionWord: Question? = null
-    private val dictionary: List<Word> = methodDictionary.loadDictionary()
+    val dictionary: List<Word> = methodDictionary.loadDictionary()
 
     fun learningWord() {
         while (true) {
-            questionWord = getNextQuestion()
+            try {
+                questionWord = getNextQuestion()
+            } catch (e: IllegalArgumentException) {
+                println(e.message)
+                return
+            }
             if (questionWord == null) {
                 println("Все слова в словаре выучены!\n")
                 return
@@ -39,7 +45,7 @@ class LearnWordsTrainer(
                 println(questionWord?.asConsoleString())
                 val userAnswerInput = readln().toIntOrNull()
                 when (userAnswerInput) {
-                    in 1..QUANTITY_OF_ANSWERS -> {
+                    in 1..QUANTITY_OF_VARIANTS -> {
                         if (checkAnswer(userAnswerInput?.minus(1))) {
                             println("Правильно!\n")
                         } else {
@@ -58,15 +64,27 @@ class LearnWordsTrainer(
     }
 
     fun getNextQuestion(): Question? {
+        if (dictionary.size < QUANTITY_OF_VARIANTS) {
+            throw IllegalArgumentException("Недостаточно слов в словаре\n")
+        }
+
         val notLearnedList = dictionary.filter { it.correctAnswersCount < NUMBER_OF_SUCCESS_TRIES }
         if (notLearnedList.isEmpty()) return null
-        val questionWords = notLearnedList.shuffled().take(QUANTITY_OF_ANSWERS).toMutableList()
-        if (questionWords.size < QUANTITY_OF_ANSWERS) {
+        val questionWords = notLearnedList.shuffled().take(QUANTITY_OF_VARIANTS).toMutableList()
+        if (questionWords.size < QUANTITY_OF_VARIANTS) {
             questionWords.addAll(
                 dictionary
                     .filter { it !in questionWords }
-                    .shuffled().take(QUANTITY_OF_ANSWERS - questionWords.size))
+                    .shuffled().take(QUANTITY_OF_VARIANTS - questionWords.size))
         }
+
+        if (questionWords.size > THRESHOLD_OF_VARIANTS) {
+            throw IllegalArgumentException(
+                "Превышено максимальное количество вариантов для ответа.\n" +
+                        "Количество ответов:${questionWords.size}. Допустимый параметр:${THRESHOLD_OF_VARIANTS}\n"
+            )
+        }
+
         val correctAnswer = questionWords.random()
         return Question(
             variants = questionWords.shuffled(),
@@ -78,7 +96,7 @@ class LearnWordsTrainer(
         val correctAnswerId = questionWord?.variants?.indexOf(questionWord?.correctAnswer)
         if (userAnswerIndex == null) return false
         val userAnswerId: Int = when (userAnswerIndex) {
-            in 0 until QUANTITY_OF_ANSWERS -> userAnswerIndex
+            in 0 until QUANTITY_OF_VARIANTS -> userAnswerIndex
             else -> return false
         }
         if (correctAnswerId == userAnswerId) {
@@ -95,5 +113,5 @@ class LearnWordsTrainer(
 
     fun getStatistics() = methodDictionary.getStatistics()
 
-    fun resetStatistics() = methodDictionary.resetProgress()
+    fun resetStatistics() = if (methodDictionary.resetProgress()) "Ваш прогресс сброшен" else "Ваш словарь пуст"
 }

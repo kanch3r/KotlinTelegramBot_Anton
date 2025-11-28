@@ -111,10 +111,11 @@ class DatabaseUserDictionary(val chatId: Long) : IUserDictionary {
         return Statistics(0, 0, 0.0)
     }
 
-    override fun resetProgress(): String {
-        DriverManager.getConnection("jdbc:sqlite:$DICTIONARY_SOURCE_DB")
-            .use { connection ->
-                val sgl = """
+    override fun resetProgress(): Boolean {
+        return if (loadDictionary().isNotEmpty()) {
+            DriverManager.getConnection("jdbc:sqlite:$DICTIONARY_SOURCE_DB")
+                .use { connection ->
+                    val sgl = """
                     UPDATE user_answers
                     SET correct_answer_count = 0
                     WHERE user_id in (
@@ -124,12 +125,15 @@ class DatabaseUserDictionary(val chatId: Long) : IUserDictionary {
                     )
                 """.trimIndent()
 
-                connection.prepareStatement(sgl).use { statement ->
-                    statement.setLong(1, chatId)
-                    statement.executeUpdate()
+                    connection.prepareStatement(sgl).use { statement ->
+                        statement.setLong(1, chatId)
+                        statement.executeUpdate()
+                    }
                 }
-            }
-        return "Ваш прогресс сброшен"
+            true
+        } else {
+            false
+        }
     }
 
     private fun createTablesIfNotExists() {
